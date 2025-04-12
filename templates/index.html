@@ -34,11 +34,19 @@
       <p id="res-desc" class="mt-4 text-gray-800 italic"></p>
       <p id="res-nota" class="mt-2 text-yellow-700 font-medium"></p>
       <img id="res-capa" class="mt-4 rounded shadow mx-auto" />
+      
+      <!-- Informações adicionais do autor -->
+      <div id="info-autor" class="mt-6">
+        <h3 class="font-semibold text-lg">Biografia do Autor</h3>
+        <p id="res-biografia" class="text-gray-700 mt-2"></p>
+        <img id="res-imagem-autor" class="mt-4 rounded w-32 mx-auto" />
+      </div>
     </div>
 
     <div id="erro" class="text-red-600 mt-4 hidden"></div>
   </div>
 
+  <!-- JavaScript -->
   <script>
     document.getElementById("obraForm").addEventListener("submit", async function(e) {
       e.preventDefault();
@@ -47,6 +55,7 @@
       const resultado = document.getElementById("resultado");
       const erro = document.getElementById("erro");
 
+      // Esconde as mensagens de resultado e erro antes de fazer a requisição
       resultado.classList.add("hidden");
       erro.classList.add("hidden");
 
@@ -59,12 +68,15 @@
           body: JSON.stringify({ titulo: titulo })
         });
 
+        // Checando se a resposta da API é válida
         const dados = await response.json();
 
+        // Se houver erro na resposta
         if (dados.mensagem || dados.erro) {
           erro.textContent = dados.mensagem || dados.erro;
           erro.classList.remove("hidden");
         } else {
+          // Atualiza os dados da obra
           document.getElementById("res-titulo").textContent = dados.titulo;
           document.getElementById("res-autor").textContent = `Autor: ${dados.autor}`;
           document.getElementById("res-ano").textContent = `Ano de publicação: ${dados.ano_publicacao}`;
@@ -72,6 +84,28 @@
           document.getElementById("res-nota").textContent = `Nota média: ${dados.nota}`;
           document.getElementById("res-capa").src = dados.capa || "";
           document.getElementById("res-capa").alt = "Capa da obra";
+          
+          // Exibindo as informações do autor
+          const infoAutorResponse = await fetch("/autor", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ nome: dados.autor })
+          });
+
+          const autorDados = await infoAutorResponse.json();
+
+          // Atualiza as informações do autor
+          if (autorDados.biografia && autorDados.imagem) {
+            document.getElementById("res-biografia").textContent = autorDados.biografia;
+            document.getElementById("res-imagem-autor").src = autorDados.imagem;
+            document.getElementById("res-imagem-autor").alt = "Imagem do Autor";
+          } else {
+            document.getElementById("res-biografia").textContent = "Biografia não disponível.";
+          }
+
+          // Exibe o resultado
           resultado.classList.remove("hidden");
         }
       } catch (err) {
