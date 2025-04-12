@@ -7,8 +7,8 @@ from pydantic import BaseModel
 from functools import lru_cache
 import wikipedia
 import requests
-import os  # <- IMPORTADO PARA USAR ENV VAR
-import uvicorn  # <- PARA RODAR LOCALMENTE
+import os
+import uvicorn
 
 # Inicialização do FastAPI
 app = FastAPI()
@@ -115,7 +115,7 @@ def obter_info_obra(obra: ObraInfo):
         return {"erro": str(e)}
 
 
-# Execução local com suporte à variável de ambiente PORT
+# Execução local e compatível com servidores como Render/Heroku
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run("main:app", host="0.0.0.0", port=port)
