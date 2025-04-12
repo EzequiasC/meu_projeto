@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from functools import lru_cache
 import wikipedia
 import requests
+import os  # <- IMPORTADO PARA USAR ENV VAR
+import uvicorn  # <- PARA RODAR LOCALMENTE
 
 # Inicialização do FastAPI
 app = FastAPI()
@@ -107,12 +109,13 @@ def obter_info_autor(autor: AutorInfo):
 @app.post("/obra")
 def obter_info_obra(obra: ObraInfo):
     try:
-        if obra.autor:
-            # Se o autor for informado, busca pela combinação de título e autor
-            resultado = buscar_obra_por_titulo(obra.titulo)
-        else:
-            # Se o autor não for informado, busca apenas pelo título
-            resultado = buscar_obra_por_titulo(obra.titulo)
+        resultado = buscar_obra_por_titulo(obra.titulo)
         return resultado
     except Exception as e:
         return {"erro": str(e)}
+
+
+# Execução local com suporte à variável de ambiente PORT
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
