@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Consulta de Obras</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+  <div class="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md">
+    <h1 class="text-3xl font-bold mb-6 text-center">Buscar Informações de Obras</h1>
+
+    <form id="obraForm" class="space-y-4">
+      <input
+        type="text"
+        id="titulo"
+        name="titulo"
+        placeholder="Digite o título da obra"
+        class="w-full p-3 border border-gray-300 rounded"
+        required
+      />
+      <button
+        type="submit"
+        class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700"
+      >
+        Buscar Obra
+      </button>
+    </form>
+
+    <div id="resultado" class="mt-8 hidden">
+      <h2 id="res-titulo" class="text-xl font-semibold mb-2"></h2>
+      <p id="res-autor" class="text-gray-700"></p>
+      <p id="res-ano" class="text-gray-700"></p>
+      <p id="res-desc" class="mt-4 text-gray-800 italic"></p>
+      <p id="res-nota" class="mt-2 text-yellow-700 font-medium"></p>
+      <img id="res-capa" class="mt-4 rounded shadow mx-auto" />
+    </div>
+
+    <div id="erro" class="text-red-600 mt-4 hidden"></div>
+  </div>
+
+  <script>
+    document.getElementById("obraForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const titulo = document.getElementById("titulo").value;
+      const resultado = document.getElementById("resultado");
+      const erro = document.getElementById("erro");
+
+      resultado.classList.add("hidden");
+      erro.classList.add("hidden");
+
+      try {
+        const response = await fetch("/obra", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ titulo: titulo })
+        });
+
+        const dados = await response.json();
+
+        if (dados.mensagem || dados.erro) {
+          erro.textContent = dados.mensagem || dados.erro;
+          erro.classList.remove("hidden");
+        } else {
+          document.getElementById("res-titulo").textContent = dados.titulo;
+          document.getElementById("res-autor").textContent = `Autor: ${dados.autor}`;
+          document.getElementById("res-ano").textContent = `Ano de publicação: ${dados.ano_publicacao}`;
+          document.getElementById("res-desc").textContent = dados.descricao || "Sem descrição disponível.";
+          document.getElementById("res-nota").textContent = `Nota média: ${dados.nota}`;
+          document.getElementById("res-capa").src = dados.capa || "";
+          document.getElementById("res-capa").alt = "Capa da obra";
+          resultado.classList.remove("hidden");
+        }
+      } catch (err) {
+        erro.textContent = "Erro ao buscar dados da obra.";
+        erro.classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>
